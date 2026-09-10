@@ -1,6 +1,7 @@
 # 3Dmigoto_Arma3
 3Dmigoto Arma3 fix with custom eye priority S3D settings.
 
+![Arma3_sighting](https://github.com/Vital-Volkov/3Dmigoto_Arma3/blob/main/Arma3_sighting.png)
 ## What made
 Custom unsymmetric(eye priority for sighting) S3D settings based on my UserIPD/VirtualIPD system to replace NV Separation/Convergence 3DVision settings.
 
