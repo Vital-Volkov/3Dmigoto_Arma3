@@ -1,0 +1,488 @@
+//ShadowsSoft
+// ---- Created with 3Dmigoto v1.3.16.41 on Thu May 14 18:44:59 2026
+
+cbuffer PSCB_NonFrequent : register(b0)
+{
+  float4 PSC_TerrainSatNormDist : packoffset(c0);
+  float4 PSC_FogColor : packoffset(c1);
+  float4 PSC_WLight : packoffset(c2);
+  float4 PSC_DepthClip : packoffset(c3);
+  float4 PSC_HDRMultiply : packoffset(c4);
+  float4 PSC_InvW_InvH_X_X : packoffset(c5);
+  float4 PSC_SBTSize_invSBTSize_X_AlphaMult : packoffset(c6);
+  float4 PSC_WaterFogColor : packoffset(c7);
+  float4 PSC_ShaderDebugMode : packoffset(c8);
+  float4 PSC_CausticsPars[3] : packoffset(c9);
+  float4 PSC_SSAOCausticsScale : packoffset(c12);
+  float4 PSC_ClearColor : packoffset(c13);
+  float4 PSC_HazePars : packoffset(c14);
+  float4 PSC_WaterLightExtinctionCoefs : packoffset(c15);
+  float4 PSC_WaterDiffuseLightExtinctionCoefs : packoffset(c16);
+  float4 PSC_WaterFogGradientCoefs : packoffset(c17);
+  float4 PSC_SimulWeatherPars[8] : packoffset(c18);
+}
+
+cbuffer PSCB_PostProcess : register(b13)
+{
+  float4 PSC_QueryDot : packoffset(c0);
+  float4 PSC_RgbEyeCoef : packoffset(c1);
+  float4 PSC_NightControl : packoffset(c2);
+  float4 PSC_UIPars : packoffset(c3);
+  float4 PSC_RainAlpha : packoffset(c4);
+  float2 PSC_RainScreenRes : packoffset(c5);
+  float4 PSC_BlurKernel[11] : packoffset(c6);
+  float4 PSC_SceneOffsets2[4] : packoffset(c17);
+  float4 PSC_SceneOffsets4[16] : packoffset(c21);
+  float4 PSC_BloomPars : packoffset(c37);
+  float4 PSC_BicubicSourceSize : packoffset(c38);
+  float4 PSC_BicubicTexelSize : packoffset(c39);
+  float4 PSC_BlurFactor : packoffset(c40);
+  float4 PSC_TempRangeMin01_TempRangeMax01_InvTempRangeDiff_TIMode : packoffset(c41);
+  float PSC_InvWidth : packoffset(c42);
+  float PSC_InvHeight : packoffset(c43);
+  float4 PSC_FOV : packoffset(c44);
+  float4x3 PSC_ShadowmapMatrix : packoffset(c45);
+  float4 PSC_MaxDepth : packoffset(c48);
+  float4 PSC_ShadowmapLayerBorder : packoffset(c49);
+  float4 PSC_BlurRadius : packoffset(c50);
+  float3 PSC_PlaneXBlur : packoffset(c51);
+  float4 PSC_ssaoPixelOffset : packoffset(c52);
+  float4 PSC_ssaoDistDivParams : packoffset(c53);
+  float4 PSC_ssaoMaxMinDist : packoffset(c54);
+  float4 PSC_ssaoParams : packoffset(c55);
+  float4 PSC_ssaoFogParams : packoffset(c56);
+  float4 PSC_ScreenNoise : packoffset(c57);
+  float4 PSC_FilmGrainParams : packoffset(c58);
+  float4 PSC_FilmGrainParams2 : packoffset(c59);
+  float4 PSC_AssumedLuminancePars1 : packoffset(c60);
+  float4 PSC_AssumedLuminancePars2 : packoffset(c61);
+  float4 PSC_ProjConsts : packoffset(c62);
+  float4 PSC_RadialBlurPars : packoffset(c63);
+  float4 PSC_PPColorsPars : packoffset(c64);
+  float4 PSC_LerpColor : packoffset(c65);
+  float4 PSC_ColorizeColor : packoffset(c66);
+  float4 PSC_RGBWeights : packoffset(c67);
+  float4 PSC_ChromAbberPars : packoffset(c68);
+  float4 PSC_ClrInversPars : packoffset(c69);
+  float4 PSC_PPWDAberration : packoffset(c70);
+  float4 PSC_PPDynBlurWeights[6] : packoffset(c71);
+  float4 PSC_PPColorRadPars1 : packoffset(c77);
+  float4 PSC_PPColorRadPars2 : packoffset(c78);
+  float4 PSC_BlurKernelSize : packoffset(c79);
+  float4 PSC_DepthDecimateCoefs : packoffset(c80);
+  float4 PSC_StretchRectCoefs : packoffset(c81);
+  float4 PSC_TonemapPars[2] : packoffset(c82);
+  float4 PSC_PPAAQuality : packoffset(c84);
+  float4 PSC_PPAAPars : packoffset(c85);
+  float4 PSC_PPCaustics : packoffset(c86);
+  float4 PSC_GodRayPars[3] : packoffset(c87);
+  float4 PSC_RainDropColor : packoffset(c90);
+  float4 PSC_RainLightColor : packoffset(c91);
+  float4 PSC_HDAOPars[5] : packoffset(c92);
+  float4 PSC_RainParams : packoffset(c97);
+  float4 PSC_SSAONewParams[5] : packoffset(c98);
+  float4 PSC_CMAAPars[3] : packoffset(c103);
+}
+
+SamplerState samplers_0__s : register(s0);
+SamplerComparisonState shadowMapSamplerCmp_s : register(s15);
+Texture2D<float4> samplers_0_ : register(t0);
+Texture2D<float4> textures2D_15_ : register(t15);
+
+
+// 3Dmigoto declarations
+#define cmp -
+Texture1D<float4> IniParams : register(t120);
+Texture2D<float4> StereoParams : register(t125);
+
+
+void main(
+  float4 v0 : SV_POSITION0,
+  float2 v1 : TEXCOORD0,
+  out float4 o0 : SV_Target0)
+{
+  float4 r0,r1,r2,r3,r4;
+  uint4 bitmask, uiDest;
+  float4 fDest;
+
+  r0.z = samplers_0_.SampleLevel(samplers_0__s, v1.xy, 0).x;
+  r1.x = cmp(r0.z < PSC_ShadowmapLayerBorder.x);
+  r1.y = cmp(r0.z >= PSC_ShadowmapLayerBorder.y);
+  r1.x = (int)r1.y | (int)r1.x;
+  if (r1.x != 0) discard;
+  r1.xy = v1.xy * float2(2,-2) + float2(-1,1);
+  r1.xy = PSC_FOV.xy * r1.xy;
+  r0.xy = r1.xy * r0.zz;
+  r0.w = 1;
+
+  float4 ini = IniParams.Load(0);
+  float4 ini4 = IniParams.Load(int2(4, 0));
+  float4 stereo = StereoParams.Load(0);
+
+  float renderSide = stereo.z;
+  float dominantSide = ini4.z;
+
+  float userIPDShift = -ini.x * renderSide * r0.z * PSC_FOV.x;
+  float virtualIPDShift = -ini.y * renderSide;
+
+  r0.x += userIPDShift;
+
+  if (renderSide != dominantSide)
+      r0.x += virtualIPDShift;
+
+  r1.x = dot(r0.xyzw, PSC_ShadowmapMatrix._m00_m10_m20_m30);
+  r1.y = dot(r0.xyzw, PSC_ShadowmapMatrix._m01_m11_m21_m31);
+  r0.x = dot(r0.xyzw, PSC_ShadowmapMatrix._m02_m12_m22_m32);
+  r0.y = PSC_SBTSize_invSBTSize_X_AlphaMult.y * 1.29999995;
+  r0.z = dot(v0.xyxy, float4(12.9898005,78.2330017,45.1640015,94.6729965));
+  r0.z = sin(r0.z);
+  r0.z = 43758.5469 * r0.z;
+  r0.z = frac(r0.z);
+  r0.z = 6.28318548 * r0.z;
+  sincos(r0.z, r2.x, r3.x);
+  r4.x = -r2.x;
+  r4.y = r3.x;
+  r3.x = dot(r4.yx, float2(0.974843979,0.756483793));
+  r4.z = r2.x;
+  r3.y = dot(r4.zy, float2(0.974843979,0.756483793));
+  r0.zw = r3.xy * r0.yy + r1.xy;
+  r0.z = textures2D_15_.SampleCmpLevelZero(shadowMapSamplerCmp_s, r0.zw, r0.x).x;
+  r2.x = dot(r4.yx, float2(-0.81409955,0.914375901));
+  r2.y = dot(r4.zy, float2(-0.81409955,0.914375901));
+  r1.zw = r2.xy * r0.yy + r1.xy;
+  r0.w = textures2D_15_.SampleCmpLevelZero(shadowMapSamplerCmp_s, r1.zw, r0.x).x;
+  r0.z = r0.z + r0.w;
+  r2.x = dot(r4.yx, float2(0.945586085,-0.768907249));
+  r2.y = dot(r4.zy, float2(0.945586085,-0.768907249));
+  r1.zw = r2.xy * r0.yy + r1.xy;
+  r0.w = textures2D_15_.SampleCmpLevelZero(shadowMapSamplerCmp_s, r1.zw, r0.x).x;
+  r0.z = r0.z + r0.w;
+  r2.x = dot(r4.yx, float2(-0.815442324,-0.879124641));
+  r2.y = dot(r4.zy, float2(-0.815442324,-0.879124641));
+  r1.zw = r2.xy * r0.yy + r1.xy;
+  r0.w = textures2D_15_.SampleCmpLevelZero(shadowMapSamplerCmp_s, r1.zw, r0.x).x;
+  r0.z = r0.z + r0.w;
+  r0.w = cmp(r0.z >= 3.99900007);
+  r1.z = cmp(0.00100000005 >= r0.z);
+  r1.z = (int)r0.w | (int)r1.z;
+  if (r1.z == 0) {
+    r2.x = dot(r4.yx, float2(0.443233252,-0.975115538));
+    r2.y = dot(r4.zy, float2(0.443233252,-0.975115538));
+    r1.zw = r2.xy * r0.yy + r1.xy;
+    r1.z = textures2D_15_.SampleCmpLevelZero(shadowMapSamplerCmp_s, r1.zw, r0.x).x;
+    r0.z = r1.z + r0.z;
+    r2.x = dot(r4.yx, float2(-0.241888404,0.997065067));
+    r2.y = dot(r4.zy, float2(-0.241888404,0.997065067));
+    r1.zw = r2.xy * r0.yy + r1.xy;
+    r1.z = textures2D_15_.SampleCmpLevelZero(shadowMapSamplerCmp_s, r1.zw, r0.x).x;
+    r0.z = r1.z + r0.z;
+    r2.x = dot(r4.yx, float2(-0.915885806,0.457714319));
+    r2.y = dot(r4.zy, float2(-0.915885806,0.457714319));
+    r1.zw = r2.xy * r0.yy + r1.xy;
+    r1.z = textures2D_15_.SampleCmpLevelZero(shadowMapSamplerCmp_s, r1.zw, r0.x).x;
+    r0.z = r1.z + r0.z;
+    r2.x = dot(r4.yx, float2(-0.942016244,-0.399062157));
+    r2.y = dot(r4.zy, float2(-0.942016244,-0.399062157));
+    r1.zw = r2.xy * r0.yy + r1.xy;
+    r1.z = textures2D_15_.SampleCmpLevelZero(shadowMapSamplerCmp_s, r1.zw, r0.x).x;
+    r0.z = r1.z + r0.z;
+    r2.x = dot(r4.yx, float2(-0.0941841006,-0.929388702));
+    r2.y = dot(r4.zy, float2(-0.0941841006,-0.929388702));
+    r1.zw = r2.xy * r0.yy + r1.xy;
+    r1.z = textures2D_15_.SampleCmpLevelZero(shadowMapSamplerCmp_s, r1.zw, r0.x).x;
+    r0.z = r1.z + r0.z;
+    r2.x = dot(r4.yx, float2(0.791975141,0.190901875));
+    r2.y = dot(r4.zy, float2(0.791975141,0.190901875));
+    r1.zw = r2.xy * r0.yy + r1.xy;
+    r1.z = textures2D_15_.SampleCmpLevelZero(shadowMapSamplerCmp_s, r1.zw, r0.x).x;
+    r0.z = r1.z + r0.z;
+    r2.x = dot(r4.yx, float2(0.199841261,0.78641367));
+    r2.y = dot(r4.zy, float2(0.199841261,0.78641367));
+    r1.zw = r2.xy * r0.yy + r1.xy;
+    r1.z = textures2D_15_.SampleCmpLevelZero(shadowMapSamplerCmp_s, r1.zw, r0.x).x;
+    r0.z = r1.z + r0.z;
+    r2.x = dot(r4.yx, float2(0.53742981,-0.4737342));
+    r2.y = dot(r4.zy, float2(0.53742981,-0.4737342));
+    r1.zw = r2.xy * r0.yy + r1.xy;
+    r1.z = textures2D_15_.SampleCmpLevelZero(shadowMapSamplerCmp_s, r1.zw, r0.x).x;
+    r0.z = r1.z + r0.z;
+    r2.x = dot(r4.yx, float2(-0.26496911,-0.418930233));
+    r2.y = dot(r4.zy, float2(-0.26496911,-0.418930233));
+    r1.zw = r2.xy * r0.yy + r1.xy;
+    r1.z = textures2D_15_.SampleCmpLevelZero(shadowMapSamplerCmp_s, r1.zw, r0.x).x;
+    r0.z = r1.z + r0.z;
+    r2.x = dot(r4.yx, float2(-0.382775426,0.276768446));
+    r2.y = dot(r4.zy, float2(-0.382775426,0.276768446));
+    r1.zw = r2.xy * r0.yy + r1.xy;
+    r1.z = textures2D_15_.SampleCmpLevelZero(shadowMapSamplerCmp_s, r1.zw, r0.x).x;
+    r0.z = r1.z + r0.z;
+    r2.x = dot(r4.yx, float2(0.344959378,0.293877602));
+    r2.y = dot(r4.zy, float2(0.344959378,0.293877602));
+    r1.zw = r2.xy * r0.yy + r1.xy;
+    r1.z = textures2D_15_.SampleCmpLevelZero(shadowMapSamplerCmp_s, r1.zw, r0.x).x;
+    r0.z = r1.z + r0.z;
+    r2.x = dot(r4.yx, float2(0.143831611,-0.1410079));
+    r2.y = dot(r4.zy, float2(0.143831611,-0.1410079));
+    r1.xy = r2.xy * r0.yy + r1.xy;
+    r0.x = textures2D_15_.SampleCmpLevelZero(shadowMapSamplerCmp_s, r1.xy, r0.x).x;
+    r0.x = r0.z + r0.x;
+    r0.x = 0.0625 * r0.x;
+  } else {
+    r0.x = r0.w ? 1.000000 : 0;
+  }
+  o0.x = r0.x;
+  o0.yzw = float3(0,0,1);
+  return;
+}
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//
+// Generated by Microsoft (R) HLSL Shader Compiler 9.29.952.3111
+//
+//   using 3Dmigoto v1.3.16.41 on Thu May 14 18:44:59 2026
+//
+//
+// Buffer Definitions:
+//
+// cbuffer PSCB_NonFrequent
+// {
+//
+//   float4 PSC_TerrainSatNormDist;     // Offset:    0 Size:    16 [unused]
+//   float4 PSC_FogColor;               // Offset:   16 Size:    16 [unused]
+//   float4 PSC_WLight;                 // Offset:   32 Size:    16 [unused]
+//   float4 PSC_DepthClip;              // Offset:   48 Size:    16 [unused]
+//   float4 PSC_HDRMultiply;            // Offset:   64 Size:    16 [unused]
+//   float4 PSC_InvW_InvH_X_X;          // Offset:   80 Size:    16 [unused]
+//   float4 PSC_SBTSize_invSBTSize_X_AlphaMult;// Offset:   96 Size:    16
+//   float4 PSC_WaterFogColor;          // Offset:  112 Size:    16 [unused]
+//   float4 PSC_ShaderDebugMode;        // Offset:  128 Size:    16 [unused]
+//   float4 PSC_CausticsPars[3];        // Offset:  144 Size:    48 [unused]
+//   float4 PSC_SSAOCausticsScale;      // Offset:  192 Size:    16 [unused]
+//   float4 PSC_ClearColor;             // Offset:  208 Size:    16 [unused]
+//   float4 PSC_HazePars;               // Offset:  224 Size:    16 [unused]
+//   float4 PSC_WaterLightExtinctionCoefs;// Offset:  240 Size:    16 [unused]
+//   float4 PSC_WaterDiffuseLightExtinctionCoefs;// Offset:  256 Size:    16 [unused]
+//   float4 PSC_WaterFogGradientCoefs;  // Offset:  272 Size:    16 [unused]
+//   float4 PSC_SimulWeatherPars[8];    // Offset:  288 Size:   128 [unused]
+//
+// }
+//
+// cbuffer PSCB_PostProcess
+// {
+//
+//   float4 PSC_QueryDot;               // Offset:    0 Size:    16 [unused]
+//   float4 PSC_RgbEyeCoef;             // Offset:   16 Size:    16 [unused]
+//   float4 PSC_NightControl;           // Offset:   32 Size:    16 [unused]
+//   float4 PSC_UIPars;                 // Offset:   48 Size:    16 [unused]
+//   float4 PSC_RainAlpha;              // Offset:   64 Size:    16 [unused]
+//   float2 PSC_RainScreenRes;          // Offset:   80 Size:     8 [unused]
+//   float4 PSC_BlurKernel[11];         // Offset:   96 Size:   176 [unused]
+//   float4 PSC_SceneOffsets2[4];       // Offset:  272 Size:    64 [unused]
+//   float4 PSC_SceneOffsets4[16];      // Offset:  336 Size:   256 [unused]
+//   float4 PSC_BloomPars;              // Offset:  592 Size:    16 [unused]
+//   float4 PSC_BicubicSourceSize;      // Offset:  608 Size:    16 [unused]
+//   float4 PSC_BicubicTexelSize;       // Offset:  624 Size:    16 [unused]
+//   float4 PSC_BlurFactor;             // Offset:  640 Size:    16 [unused]
+//   float4 PSC_TempRangeMin01_TempRangeMax01_InvTempRangeDiff_TIMode;// Offset:  656 Size:    16 [unused]
+//   float PSC_InvWidth;                // Offset:  672 Size:     4 [unused]
+//   float PSC_InvHeight;               // Offset:  688 Size:     4 [unused]
+//   float4 PSC_FOV;                    // Offset:  704 Size:    16
+//   float4x3 PSC_ShadowmapMatrix;      // Offset:  720 Size:    48
+//   float4 PSC_MaxDepth;               // Offset:  768 Size:    16 [unused]
+//   float4 PSC_ShadowmapLayerBorder;   // Offset:  784 Size:    16
+//   float4 PSC_BlurRadius;             // Offset:  800 Size:    16 [unused]
+//   float3 PSC_PlaneXBlur;             // Offset:  816 Size:    12 [unused]
+//   float4 PSC_ssaoPixelOffset;        // Offset:  832 Size:    16 [unused]
+//   float4 PSC_ssaoDistDivParams;      // Offset:  848 Size:    16 [unused]
+//   float4 PSC_ssaoMaxMinDist;         // Offset:  864 Size:    16 [unused]
+//   float4 PSC_ssaoParams;             // Offset:  880 Size:    16 [unused]
+//   float4 PSC_ssaoFogParams;          // Offset:  896 Size:    16 [unused]
+//   float4 PSC_ScreenNoise;            // Offset:  912 Size:    16 [unused]
+//   float4 PSC_FilmGrainParams;        // Offset:  928 Size:    16 [unused]
+//   float4 PSC_FilmGrainParams2;       // Offset:  944 Size:    16 [unused]
+//   float4 PSC_AssumedLuminancePars1;  // Offset:  960 Size:    16 [unused]
+//   float4 PSC_AssumedLuminancePars2;  // Offset:  976 Size:    16 [unused]
+//   float4 PSC_ProjConsts;             // Offset:  992 Size:    16 [unused]
+//   float4 PSC_RadialBlurPars;         // Offset: 1008 Size:    16 [unused]
+//   float4 PSC_PPColorsPars;           // Offset: 1024 Size:    16 [unused]
+//   float4 PSC_LerpColor;              // Offset: 1040 Size:    16 [unused]
+//   float4 PSC_ColorizeColor;          // Offset: 1056 Size:    16 [unused]
+//   float4 PSC_RGBWeights;             // Offset: 1072 Size:    16 [unused]
+//   float4 PSC_ChromAbberPars;         // Offset: 1088 Size:    16 [unused]
+//   float4 PSC_ClrInversPars;          // Offset: 1104 Size:    16 [unused]
+//   float4 PSC_PPWDAberration;         // Offset: 1120 Size:    16 [unused]
+//   float4 PSC_PPDynBlurWeights[6];    // Offset: 1136 Size:    96 [unused]
+//   float4 PSC_PPColorRadPars1;        // Offset: 1232 Size:    16 [unused]
+//   float4 PSC_PPColorRadPars2;        // Offset: 1248 Size:    16 [unused]
+//   float4 PSC_BlurKernelSize;         // Offset: 1264 Size:    16 [unused]
+//   float4 PSC_DepthDecimateCoefs;     // Offset: 1280 Size:    16 [unused]
+//   float4 PSC_StretchRectCoefs;       // Offset: 1296 Size:    16 [unused]
+//   float4 PSC_TonemapPars[2];         // Offset: 1312 Size:    32 [unused]
+//   float4 PSC_PPAAQuality;            // Offset: 1344 Size:    16 [unused]
+//   float4 PSC_PPAAPars;               // Offset: 1360 Size:    16 [unused]
+//   float4 PSC_PPCaustics;             // Offset: 1376 Size:    16 [unused]
+//   float4 PSC_GodRayPars[3];          // Offset: 1392 Size:    48 [unused]
+//   float4 PSC_RainDropColor;          // Offset: 1440 Size:    16 [unused]
+//   float4 PSC_RainLightColor;         // Offset: 1456 Size:    16 [unused]
+//   float4 PSC_HDAOPars[5];            // Offset: 1472 Size:    80 [unused]
+//   float4 PSC_RainParams;             // Offset: 1552 Size:    16 [unused]
+//   float4 PSC_SSAONewParams[5];       // Offset: 1568 Size:    80 [unused]
+//   float4 PSC_CMAAPars[3];            // Offset: 1648 Size:    48 [unused]
+//
+// }
+//
+//
+// Resource Bindings:
+//
+// Name                                 Type  Format         Dim Slot Elements
+// ------------------------------ ---------- ------- ----------- ---- --------
+// samplers[0]                       sampler      NA          NA    0        1
+// shadowMapSamplerCmp             sampler_c      NA          NA   15        1
+// samplers[0]                       texture  float4          2d    0        1
+// textures2D[15]                    texture  float4          2d   15        1
+// PSCB_NonFrequent                  cbuffer      NA          NA    0        1
+// PSCB_PostProcess                  cbuffer      NA          NA   13        1
+//
+//
+//
+// Input signature:
+//
+// Name                 Index   Mask Register SysValue  Format   Used
+// -------------------- ----- ------ -------- -------- ------- ------
+// SV_POSITION              0   xyzw        0      POS   float   xy
+// TEXCOORD                 0   xy          1     NONE   float   xy
+//
+//
+// Output signature:
+//
+// Name                 Index   Mask Register SysValue  Format   Used
+// -------------------- ----- ------ -------- -------- ------- ------
+// SV_Target                0   xyzw        0   TARGET   float   xyzw
+//
+ps_5_0
+dcl_globalFlags refactoringAllowed
+dcl_constantbuffer cb0[7], immediateIndexed
+dcl_constantbuffer cb13[50], immediateIndexed
+dcl_sampler s0, mode_default
+dcl_sampler s15, mode_comparison
+dcl_resource_texture2d (float,float,float,float) t0
+dcl_resource_texture2d (float,float,float,float) t15
+dcl_input_ps_siv linear noperspective v0.xy, position
+dcl_input_ps linear v1.xy
+dcl_output o0.xyzw
+dcl_temps 5
+sample_l_indexable(texture2d)(float,float,float,float) r0.z, v1.xyxx, t0.yzxw, s0, l(0.000000)
+lt r1.x, r0.z, cb13[49].x
+ge r1.y, r0.z, cb13[49].y
+or r1.x, r1.y, r1.x
+discard_nz r1.x
+mad r1.xy, v1.xyxx, l(2.000000, -2.000000, 0.000000, 0.000000), l(-1.000000, 1.000000, 0.000000, 0.000000)
+mul r1.xy, r1.xyxx, cb13[44].xyxx
+mul r0.xy, r0.zzzz, r1.xyxx
+mov r0.w, l(1.000000)
+dp4 r1.x, r0.xyzw, cb13[45].xyzw
+dp4 r1.y, r0.xyzw, cb13[46].xyzw
+dp4 r0.x, r0.xyzw, cb13[47].xyzw
+mul r0.y, l(1.300000), cb0[6].y
+dp4 r0.z, v0.xyxy, l(12.989800, 78.233002, 45.164001, 94.672997)
+sincos r0.z, null, r0.z
+mul r0.z, r0.z, l(43758.546875)
+frc r0.z, r0.z
+mul r0.z, r0.z, l(6.28318548)
+sincos r2.x, r3.x, r0.z
+mov r4.x, -r2.x
+mov r4.y, r3.x
+dp2 r3.x, r4.yxyy, l(0.974844, 0.756483793, 0.000000, 0.000000)
+mov r4.z, r2.x
+dp2 r3.y, r4.zyzz, l(0.974844, 0.756483793, 0.000000, 0.000000)
+mad r0.zw, r3.xxxy, r0.yyyy, r1.xxxy
+sample_c_lz_indexable(texture2d)(float,float,float,float) r0.z, r0.zwzz, t15.xxxx, s15, r0.x
+dp2 r2.x, r4.yxyy, l(-0.814099550, 0.914375901, 0.000000, 0.000000)
+dp2 r2.y, r4.zyzz, l(-0.814099550, 0.914375901, 0.000000, 0.000000)
+mad r1.zw, r2.xxxy, r0.yyyy, r1.xxxy
+sample_c_lz_indexable(texture2d)(float,float,float,float) r0.w, r1.zwzz, t15.xxxx, s15, r0.x
+add r0.z, r0.w, r0.z
+dp2 r2.x, r4.yxyy, l(0.945586085, -0.768907249, 0.000000, 0.000000)
+dp2 r2.y, r4.zyzz, l(0.945586085, -0.768907249, 0.000000, 0.000000)
+mad r1.zw, r2.xxxy, r0.yyyy, r1.xxxy
+sample_c_lz_indexable(texture2d)(float,float,float,float) r0.w, r1.zwzz, t15.xxxx, s15, r0.x
+add r0.z, r0.w, r0.z
+dp2 r2.x, r4.yxyy, l(-0.815442324, -0.879124641, 0.000000, 0.000000)
+dp2 r2.y, r4.zyzz, l(-0.815442324, -0.879124641, 0.000000, 0.000000)
+mad r1.zw, r2.xxxy, r0.yyyy, r1.xxxy
+sample_c_lz_indexable(texture2d)(float,float,float,float) r0.w, r1.zwzz, t15.xxxx, s15, r0.x
+add r0.z, r0.w, r0.z
+ge r0.w, r0.z, l(3.999000)
+ge r1.z, l(0.001000), r0.z
+or r1.z, r0.w, r1.z
+if_z r1.z
+  dp2 r2.x, r4.yxyy, l(0.443233252, -0.975115538, 0.000000, 0.000000)
+  dp2 r2.y, r4.zyzz, l(0.443233252, -0.975115538, 0.000000, 0.000000)
+  mad r1.zw, r2.xxxy, r0.yyyy, r1.xxxy
+  sample_c_lz_indexable(texture2d)(float,float,float,float) r1.z, r1.zwzz, t15.xxxx, s15, r0.x
+  add r0.z, r0.z, r1.z
+  dp2 r2.x, r4.yxyy, l(-0.241888404, 0.997065067, 0.000000, 0.000000)
+  dp2 r2.y, r4.zyzz, l(-0.241888404, 0.997065067, 0.000000, 0.000000)
+  mad r1.zw, r2.xxxy, r0.yyyy, r1.xxxy
+  sample_c_lz_indexable(texture2d)(float,float,float,float) r1.z, r1.zwzz, t15.xxxx, s15, r0.x
+  add r0.z, r0.z, r1.z
+  dp2 r2.x, r4.yxyy, l(-0.915885806, 0.457714319, 0.000000, 0.000000)
+  dp2 r2.y, r4.zyzz, l(-0.915885806, 0.457714319, 0.000000, 0.000000)
+  mad r1.zw, r2.xxxy, r0.yyyy, r1.xxxy
+  sample_c_lz_indexable(texture2d)(float,float,float,float) r1.z, r1.zwzz, t15.xxxx, s15, r0.x
+  add r0.z, r0.z, r1.z
+  dp2 r2.x, r4.yxyy, l(-0.942016244, -0.399062157, 0.000000, 0.000000)
+  dp2 r2.y, r4.zyzz, l(-0.942016244, -0.399062157, 0.000000, 0.000000)
+  mad r1.zw, r2.xxxy, r0.yyyy, r1.xxxy
+  sample_c_lz_indexable(texture2d)(float,float,float,float) r1.z, r1.zwzz, t15.xxxx, s15, r0.x
+  add r0.z, r0.z, r1.z
+  dp2 r2.x, r4.yxyy, l(-0.0941841006, -0.929388702, 0.000000, 0.000000)
+  dp2 r2.y, r4.zyzz, l(-0.0941841006, -0.929388702, 0.000000, 0.000000)
+  mad r1.zw, r2.xxxy, r0.yyyy, r1.xxxy
+  sample_c_lz_indexable(texture2d)(float,float,float,float) r1.z, r1.zwzz, t15.xxxx, s15, r0.x
+  add r0.z, r0.z, r1.z
+  dp2 r2.x, r4.yxyy, l(0.791975141, 0.190901875, 0.000000, 0.000000)
+  dp2 r2.y, r4.zyzz, l(0.791975141, 0.190901875, 0.000000, 0.000000)
+  mad r1.zw, r2.xxxy, r0.yyyy, r1.xxxy
+  sample_c_lz_indexable(texture2d)(float,float,float,float) r1.z, r1.zwzz, t15.xxxx, s15, r0.x
+  add r0.z, r0.z, r1.z
+  dp2 r2.x, r4.yxyy, l(0.199841261, 0.786413670, 0.000000, 0.000000)
+  dp2 r2.y, r4.zyzz, l(0.199841261, 0.786413670, 0.000000, 0.000000)
+  mad r1.zw, r2.xxxy, r0.yyyy, r1.xxxy
+  sample_c_lz_indexable(texture2d)(float,float,float,float) r1.z, r1.zwzz, t15.xxxx, s15, r0.x
+  add r0.z, r0.z, r1.z
+  dp2 r2.x, r4.yxyy, l(0.537429810, -0.473734200, 0.000000, 0.000000)
+  dp2 r2.y, r4.zyzz, l(0.537429810, -0.473734200, 0.000000, 0.000000)
+  mad r1.zw, r2.xxxy, r0.yyyy, r1.xxxy
+  sample_c_lz_indexable(texture2d)(float,float,float,float) r1.z, r1.zwzz, t15.xxxx, s15, r0.x
+  add r0.z, r0.z, r1.z
+  dp2 r2.x, r4.yxyy, l(-0.264969110, -0.418930233, 0.000000, 0.000000)
+  dp2 r2.y, r4.zyzz, l(-0.264969110, -0.418930233, 0.000000, 0.000000)
+  mad r1.zw, r2.xxxy, r0.yyyy, r1.xxxy
+  sample_c_lz_indexable(texture2d)(float,float,float,float) r1.z, r1.zwzz, t15.xxxx, s15, r0.x
+  add r0.z, r0.z, r1.z
+  dp2 r2.x, r4.yxyy, l(-0.382775426, 0.276768446, 0.000000, 0.000000)
+  dp2 r2.y, r4.zyzz, l(-0.382775426, 0.276768446, 0.000000, 0.000000)
+  mad r1.zw, r2.xxxy, r0.yyyy, r1.xxxy
+  sample_c_lz_indexable(texture2d)(float,float,float,float) r1.z, r1.zwzz, t15.xxxx, s15, r0.x
+  add r0.z, r0.z, r1.z
+  dp2 r2.x, r4.yxyy, l(0.344959378, 0.293877602, 0.000000, 0.000000)
+  dp2 r2.y, r4.zyzz, l(0.344959378, 0.293877602, 0.000000, 0.000000)
+  mad r1.zw, r2.xxxy, r0.yyyy, r1.xxxy
+  sample_c_lz_indexable(texture2d)(float,float,float,float) r1.z, r1.zwzz, t15.xxxx, s15, r0.x
+  add r0.z, r0.z, r1.z
+  dp2 r2.x, r4.yxyy, l(0.143831611, -0.141007900, 0.000000, 0.000000)
+  dp2 r2.y, r4.zyzz, l(0.143831611, -0.141007900, 0.000000, 0.000000)
+  mad r1.xy, r2.xyxx, r0.yyyy, r1.xyxx
+  sample_c_lz_indexable(texture2d)(float,float,float,float) r0.x, r1.xyxx, t15.xxxx, s15, r0.x
+  add r0.x, r0.x, r0.z
+  mul r0.x, r0.x, l(0.062500)
+else
+  and r0.x, r0.w, l(0x3f800000)
+endif
+mov o0.x, r0.x
+mov o0.yzw, l(0,0,0,1.000000)
+ret
+// Approximately 112 instruction slots used
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/

@@ -1,0 +1,366 @@
+//GUICrosshairSunHaloNavMark 2DHaloToDepthMap
+// ---- Created with 3Dmigoto v1.3.16.41 on Fri May 08 08:30:19 2026
+
+struct VB
+{
+    float4 pos;
+    uint hexBGRA;
+    uint hexBGRA1;
+    float2 uv;
+    float2 uv1;
+};
+
+// 3Dmigoto declarations
+#define cmp -
+//Texture2D<float> DepthMap : register(t110); //full stereo DepthMap to calculate VirtualIPD shift for non dominant renderSide from dominant renderSide
+//Texture2D<float> DepthMap2 : register(t111);
+Texture1D<float4> IniParams : register(t120);
+//StructuredBuffer<float4> ProjectionMatrix : register(t121); //not correct matrix in cb2 so get it from another shader
+//StructuredBuffer<float4> VertexBuffer : register(t122); //vertex UV to calculate quad center to read depthMat
+//StructuredBuffer<VB> VertexBuffer : register(t122); //vertex UV to calculate quad center to read depthMat
+StructuredBuffer<uint> IndexBuffer : register(t123);
+StructuredBuffer<float4> WriteableBuffer : register(t124);
+Texture2D<float4> StereoParams : register(t125);
+
+uint IndexBufferReader(uint index)
+{
+    uint indexBufferStructIndex = index / 2; //minimal readable is 4 bytes but real index is 2 bytes
+    uint indexBufferStructValue = IndexBuffer[indexBufferStructIndex];
+
+    uint vertexID;
+
+    if (index % 2 == 0) //if even then read real index from first 2 bytes of 4 bytes
+        vertexID = indexBufferStructValue & 0xFFFF;
+    else //if odd then read real index from last 2 bytes of 4 bytes
+        vertexID = (indexBufferStructValue >> 16) & 0xFFFF;
+        
+    return vertexID;
+}
+
+void main(
+  float4 v0 : POSITION0,
+  uint4 v1 : COLOR0,
+  uint4 v2 : COLOR1,
+  float4 v3 : TEXCOORD0,
+  float2 v4 : TEXCOORD1,
+  uint vID : SV_VertexID, //to know which Halo quad is processing now
+  out float4 o0 : TEXCOORD6,
+  out float4 o1 : TEXCOORD0,
+  out float4 o2 : SV_Position0)
+{
+  float4 r0;
+  uint4 bitmask, uiDest;
+  float4 fDest;
+
+  float4 ini = IniParams.Load(0);
+  float4 ini2 = IniParams.Load(int2(2, 0));
+  float4 ini4 = IniParams.Load(int2(4, 0));
+  float4 stereo = StereoParams.Load(0);
+
+  float renderSide = stereo.z;
+  float dominantSide = ini4.z;
+  float userIPDShift = ini.x * renderSide;
+
+  r0.xyzw = (uint4)v1.zyxw;
+  o0.xyzw = float4(0.00392156886,0.00392156886,0.00392156886,0.00392156886) * r0.xyzw;
+  o1.xy = v3.xy;
+  o1.zw = float2(1,1);
+  r0.xyz = v0.xyz;
+  r0.w = 1;
+  o2.xyzw = r0.xyzw / v0.wwww;
+
+  //ini2.y to detect opened map for same icons be 3D in game but 2D on map
+//if (ini2.x == 1 && ini2.y != 1)
+//if (ini2.x != 4) //Keep 2D GUIFullscreenQuad
+if (ini2.x == 2) //add virtualIPDShift using depth map for Crosshair Lights Halo etc
+//if (ini2.x == 2 || ini2.x == 9) //add virtualIPDShift using depth map for Crosshair Lights Halo etc & Optics borders UV shift
+{
+      //float4 ini = IniParams.Load(0);
+      ////float4 ini1 = IniParams.Load(int2(1, 0));
+      ////float4 ini3 = IniParams.Load(int2(3, 0));
+      //float4 stereo = StereoParams.Load(0);
+      ////uint startIndex = ini3.x;
+      ////uint indexCount = ini3.y;
+
+      //float renderSide = stereo.z;
+      //int dominantSide = -1;
+      //float userIPDShift = ini.x * renderSide;
+      ////float userIPDShiftUV = ini1.x * renderSide;
+      ////float virtualIPDShift = ini.y * renderSide;
+      ////float GUIDepth = ini.z;
+
+    //if (ini2.x == 1) //Sun Halo etc
+    //{
+    //      //o1.x += 0.074136138 * 0.5;
+    //      //o1.y += -0.0417016 * 0.5;
+    //
+    //      float screenToQuadSizeRatioX = 2 / (VertexBuffer[1].pos.x - VertexBuffer[0].pos.x);
+    //      float quadUVSizeX = VertexBuffer[1].uv.x - VertexBuffer[0].uv.x;
+    //      float uvShift = quadUVSizeX * screenToQuadSizeRatioX * userIPDShiftUV;
+    //      o1.x += uvShift;
+    //
+    //      //if (vID == 4)
+    //        //o2.x += userIPDShift;
+    //}
+    //else
+    {
+        //if (ini2.x == 0 || ini2.x == 5)
+        //if (ini2.x == 0)
+        //    userIPDShift *= GUIDepth; //apply GUIDepth only to default GUI shaders & use full depth for Sun Halo etc when ini2.x == 1
+
+        //o2.x += userIPDShift;
+        float shiftSum = userIPDShift;
+
+        if (renderSide != dominantSide)
+        //if (ini2.x == 2 && renderSide != dominantSide)
+        {
+            //if (ini2.x == 2) //add virtualIPDShift using depth map for Crosshair Lights Halo etc
+            //if (ini2.x == 2 || ini2.x == 3) //add virtualIPDShift using depth map for Crosshair Lights Halo etc
+            {
+                //float2 depthCoordSV;
+                //
+                //if (ini2.x == 2) //depthCoord as center of 4 vertex quad
+                //{
+                //
+                //    // Calculate which 4-byte chunk contains your index
+                //    uint chunkIndex = startIndex / 2;
+                //
+                //    // Read the full 4-byte chunk
+                //    uint rawData = IndexBuffer[chunkIndex];
+                //
+                //    //uint indexBufferValue;
+                //    uint startVertexID;
+                //
+                //    // If the index you want sits on an even position (0, 2, 4...)
+                //    if (startIndex % 2 == 0)
+                //    {
+                //        // Grab the lower 16 bits (Mask with 0xFFFF)
+                //        //indexBufferValue = rawData & 0xFFFF;
+                //        startVertexID = rawData & 0xFFFF;
+                //    }
+                //    else
+                //    {
+                //        // Grab the upper 16 bits (Shift right by 16 bits)
+                //        //indexBufferValue = (rawData >> 16) & 0xFFFF;
+                //        startVertexID = (rawData >> 16) & 0xFFFF;
+                //    }
+                //
+                //    uint quadNumber = (vID - startVertexID) * 0.25;
+                //    float2 topRightVertexPos;
+                //    float2 bottomLeftVertexPos;
+                //    float2 topRightVertexUV; //when the halo quad hits a screen corner it does not go beyond it
+                //    float2 bottomLeftVertexUV; //so the only way to calculate halo center is by UV
+                //
+                //    //topRightVertexPos = VertexBuffer[2 + 10 * quadNumber].zw;
+                //    //bottomLeftVertexPos = VertexBuffer[7 + 10 * quadNumber].zw;
+                //    //topRightVertexUV = VertexBuffer[4 + 10 * quadNumber].xy;
+                //    //bottomLeftVertexUV = VertexBuffer[9 + 10 * quadNumber].xy;
+                //
+                //    topRightVertexPos = VertexBuffer[1 + startVertexID + quadNumber * 4].pos.xy;
+                //    topRightVertexUV = VertexBuffer[1 + startVertexID + quadNumber * 4].uv;
+                //    bottomLeftVertexPos = VertexBuffer[3 + startVertexID + quadNumber * 4].pos.xy;
+                //    bottomLeftVertexUV = VertexBuffer[3 + startVertexID + quadNumber * 4].uv;
+                //
+                //    float leftPartToHaloCenter = 0.5 - bottomLeftVertexUV.x;
+                //    //float rightPartToHaloCenter = topRightVertexUV.x - 0.5;
+                //    //float topPartToHaloCenter = 0.5 - topRightVertexUV.y;
+                //    float bottomPartToHaloCenter = bottomLeftVertexUV.y - 0.5;
+                //
+                //    float2 haloCenterRelativeUVFrame;
+                //    //haloCenterRelativeUVFrame.x = leftPartToHaloCenter / (leftPartToHaloCenter + rightPartToHaloCenter);
+                //    //haloCenterRelativeUVFrame.y = bottomPartToHaloCenter / (bottomPartToHaloCenter + topPartToHaloCenter);
+                //    haloCenterRelativeUVFrame.x = leftPartToHaloCenter / (topRightVertexUV.x - bottomLeftVertexUV.x);
+                //    haloCenterRelativeUVFrame.y = bottomPartToHaloCenter / (bottomLeftVertexUV.y - topRightVertexUV.y);
+                //
+                //    depthCoordSV = bottomLeftVertexPos + (topRightVertexPos - bottomLeftVertexPos) * haloCenterRelativeUVFrame;
+                //    //depthCoordSV = (bottomLeftVertexPos + topRightVertexPos) * 0.5;
+                //    //depthCoordSV = float2(0, 0);
+                //}
+                ////else //depthCoord per vertex
+                //    //depthCoordSV = o2.xy;
+                //
+                //uint depthMapWidth;
+                //uint depthMapHeight;
+                //
+                //DepthMap.GetDimensions(depthMapWidth, depthMapHeight); //left&Right in one full stereo DepthMap
+                //
+                //int2 depthCoordUV;
+                //float oneEyeWidth = depthMapWidth * 0.5;
+                //
+                //depthCoordUV.x = (depthCoordSV.x * 0.5 + 0.5) * oneEyeWidth + (dominantSide == -1 ? 0 : oneEyeWidth); //left or right part of full stereo DepthMap
+                //depthCoordUV.y = (-depthCoordSV.y * 0.5 + 0.5) * depthMapHeight;
+                ////depthCoordUV = int2(640, 360);
+                ////depthCoordUV.x += -32;
+                ////depthCoordUV.y += 32;
+                //
+                //if (stereo.w) //depth map is shifted if $useUserIPDInPostShader = 0
+                //    depthCoordUV.x += -userIPDShift * oneEyeWidth * 0.5;
+                //
+                //float depth = DepthMap.Load(int3(depthCoordUV, 0));
+                //
+                ////float viewZ = ProjectionMatrix[3].z / (depth - ProjectionMatrix[2].z);
+                //float viewZ;
+                //
+                //if (indexCount == 24)
+                //{
+                //    viewZ = WriteableBuffer[0].x;
+                //}
+                //else
+                //{
+                //    viewZ = ProjectionMatrix[3].z / (depth - ProjectionMatrix[2].z);
+                //}
+
+                //float viewZ = WriteableBuffer[0].x;
+                //float FOVScaleX = ProjectionMatrix[0].x;
+
+                ////at FOVScaleX = 1 nearClip = 0.06999999700006974837835020335777 farClip = 3010.7525591427848764881807895816
+                //float scaleX1PMRow3Z = 1.00002325;
+                //float scaleX1PMRow4Z = -0.0700016245;
+                //
+                ////at FOVScaleX = 3 nearClip = 0.25031787404970032443600368013378 farClip = 3008.2667233469573901694950142264
+                //float scaleX3PMRow3Z = 1.00008321;
+                //float scaleX3PMRow4Z = -0.250338703;
+                //
+                //float scaleXDifferencePMRow3Z = 1.00008321 - 1.00002325;
+                //float scaleXDifferencePMRow4Z = -0.250338703 - -0.0700016245;
+                //float scaleXDifferenceNormalized = (FOVScaleX - 1) * 0.5;
+
+                //float viewZ = scaleX1PMRow4Z / (depth - scaleX1PMRow3Z);
+                //float viewZ = (scaleX1PMRow4Z + scaleXDifferencePMRow4Z * scaleXDifferenceNormalized) / (depth - (scaleX1PMRow3Z + scaleXDifferencePMRow3Z * scaleXDifferenceNormalized));
+
+                //if (depth > 0)
+                //    o2.x += virtualIPDShift * FOVScaleX / viewZ;
+                //    //o2.x += virtualIPDShift / viewZ * FOVScaleX * 0.98;
+                //else
+                //    o2.x = 0;
+
+                //o2.x += virtualIPDShift * FOVScaleX / viewZ;
+                //shiftSum += virtualIPDShift * FOVScaleX / viewZ;
+                float virtualIPDShift = WriteableBuffer[0].y * renderSide;
+                shiftSum += virtualIPDShift;
+            }
+        }
+
+        //float leftRightVertexPosDifference = WriteableBuffer[0].y;
+        //float leftRightVertexUVDifference = WriteableBuffer[0].z;
+        float leftRightVertexUVToPosDiffRatio = WriteableBuffer[0].x;
+
+        //if (ini2.x == 2)
+        {
+            //if (shiftSum > 0 && o2.x == -1)//if point sits on left edge & required to shift right then add free UV space to left instead shift to avoid empty border
+            //    o1.x += -shiftSum / leftRightVertexPosDifference * leftRightVertexUVDifference;
+            //else if (shiftSum < 0 && o2.x == 1)//if point sits on right edge & required to shift left then add free UV space to right instead shift to avoid empty border
+            if (shiftSum > 0 && o2.x <= -1 || shiftSum < 0 && o2.x >= 1)//if point sits on left/right edge & required to shift so to avoid empty borders add free UV space instead shift
+                //o1.x += -shiftSum / leftRightVertexPosDifference * leftRightVertexUVDifference;
+                o1.x += -shiftSum * leftRightVertexUVToPosDiffRatio;
+            else
+                o2.x += shiftSum;
+        }
+        //else //if (ini2.x == 9)
+        //{
+        //    //o1.x += -userIPDShift * leftRightVertexUVToPosDiffRatio * GUIDepth;
+        //    float halfVirtualIPDShift = WriteableBuffer[0].z * renderSide;
+        //    //shiftSum += halfVirtualIPDShift;
+        //    shiftSum = GUIDepth > 1 ? shiftSum + halfVirtualIPDShift : shiftSum * GUIDepth;
+        //    o1.x += -shiftSum * leftRightVertexUVToPosDiffRatio;
+        //}
+    }
+}
+else if (ini2.x == 3) //Mine Marks
+{
+      //o2.x += userIPDShift;
+      float shiftSum = userIPDShift;
+
+      float4 ini3 = IniParams.Load(int2(3, 0));
+      uint startIndex = ini3.x;
+      uint indexCount = ini3.y;
+      uint indicesPerMineMark = 6;
+      uint mineMarkNumber;
+
+      for (uint i = startIndex; i < startIndex + indexCount; i++)
+      {
+          if (vID == IndexBufferReader(i))
+            mineMarkNumber = (i - startIndex) / indicesPerMineMark;
+      }
+
+      if (renderSide != dominantSide)
+      {
+          //float4 ini3 = IniParams.Load(int2(3, 0));
+          //uint startIndex = ini3.x;
+          //uint indexCount = ini3.y;
+          //uint indicesPerMineMark = 6;
+          //uint mineMarkNumber;
+          //
+          //for (uint i = startIndex; i < startIndex + indexCount; i++)
+          //{
+          //    if (vID == IndexBufferReader(i))
+          //      mineMarkNumber = (i - startIndex) / indicesPerMineMark;
+          //}
+
+          float virtualIPDShift = WriteableBuffer[mineMarkNumber].y * renderSide;
+          //o2.x += virtualIPDShift;
+          shiftSum += virtualIPDShift;
+
+          //if (mineMarkNumber == 13)
+          //  o2.x = 0;
+      }
+
+      float leftRightVertexUVToPosDiffRatio = WriteableBuffer[mineMarkNumber].x;
+
+      if (shiftSum > 0 && o2.x <= -1 || shiftSum < 0 && o2.x >= 1)//if point sits on left/right edge & required to shift so to avoid empty borders add free UV space instead shift
+      {
+          o1.x += -shiftSum * leftRightVertexUVToPosDiffRatio;
+      }
+      else
+          o2.x += shiftSum;
+}
+
+  return;
+}
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//
+// Generated by Microsoft (R) D3D Shader Disassembler
+//
+//   using 3Dmigoto v1.3.16.41 on Fri May 08 08:30:19 2026
+//
+//
+// Input signature:
+//
+// Name                 Index   Mask Register SysValue  Format   Used
+// -------------------- ----- ------ -------- -------- ------- ------
+// POSITION                 0   xyzw        0     NONE   float   xyzw
+// COLOR                    0   xyzw        1     NONE    uint   xyzw
+// COLOR                    1   xyzw        2     NONE    uint
+// TEXCOORD                 0   xy          3     NONE   float   xy
+// TEXCOORD                 1   xy          4     NONE   float
+//
+//
+// Output signature:
+//
+// Name                 Index   Mask Register SysValue  Format   Used
+// -------------------- ----- ------ -------- -------- ------- ------
+// TEXCOORD                 6   xyzw        0     NONE   float   xyzw
+// TEXCOORD                 0   xyzw        1     NONE   float   xyzw
+// SV_Position              0   xyzw        2      POS   float   xyzw
+//
+vs_5_0
+dcl_globalFlags refactoringAllowed
+dcl_input v0.xyzw
+dcl_input v1.xyzw
+dcl_input v3.xy
+dcl_output o0.xyzw
+dcl_output o1.xyzw
+dcl_output_siv o2.xyzw, position
+dcl_temps 1
+utof r0.xyzw, v1.zyxw
+mul o0.xyzw, r0.xyzw, l(0.00392156886, 0.00392156886, 0.00392156886, 0.00392156886)
+mov o1.xy, v3.xyxx
+mov o1.zw, l(0,0,1.000000,1.000000)
+mov r0.xyz, v0.xyzx
+mov r0.w, l(1.000000)
+div o2.xyzw, r0.xyzw, v0.wwww
+ret
+// Approximately 0 instruction slots used
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/

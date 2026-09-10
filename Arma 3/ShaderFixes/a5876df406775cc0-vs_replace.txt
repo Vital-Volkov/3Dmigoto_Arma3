@@ -1,0 +1,384 @@
+//SunMoon
+// ---- Created with 3Dmigoto v1.3.16.41 on Fri May 08 09:05:51 2026
+cbuffer cb4 : register(b4)
+{
+  float4 cb4[15];
+}
+
+cbuffer cb3 : register(b3)
+{
+  float4 cb3[4];
+}
+
+cbuffer cb2 : register(b2)
+{
+  float4 cb2[7];
+}
+
+cbuffer cb1 : register(b1)
+{
+  float4 cb1[8];
+}
+
+cbuffer cb0 : register(b0)
+{
+  float4 cb0[9];
+}
+
+
+
+
+// 3Dmigoto declarations
+#define cmp -
+Texture1D<float4> IniParams : register(t120);
+Texture2D<float4> StereoParams : register(t125);
+
+
+void main(
+  float4 v0 : POSITION0,
+  uint4 v1 : NORMAL0,
+  int4 v2 : TEXCOORD0,
+  int2 v3 : TEXCOORD1,
+  uint4 v4 : TANGENT0,
+  uint4 v5 : TANGENT1,
+  out float4 o0 : SV_Position0,
+  out float4 o1 : TEXCOORD6,
+  out float4 o2 : TEXCOORD7,
+  out float4 o3 : TEXCOORD4,
+  out float4 o4 : TEXCOORD5,
+  out float4 o5 : COLOR0,
+  out float4 o6 : COLOR1,
+  out float3 o7 : TEXCOORD10,
+  out float p7 : TEXCOORD11,
+  out float4 o8 : TEXCOORD0,
+  out float4 o9 : TEXCOORD1,
+  out float4 o10 : TEXCOORD2,
+  out float4 o11 : TEXCOORD3,
+  out float3 o12 : TEXCOORD9)
+{
+  float4 r0,r1,r2,r3,r4,r5,r6,r7,r8;
+  uint4 bitmask, uiDest;
+  float4 fDest;
+
+  r0.xy = (int2)v2.xy;
+  r1.x = dot(v0.xyzw, cb4[4].xyzw);
+  r1.y = dot(v0.xyzw, cb4[5].xyzw);
+  r1.z = dot(v0.xyzw, cb4[6].xyzw);
+  r2.xyzw = cb2[1].xyzw * r1.yyyy;
+  r2.xyzw = cb2[0].xyzw * r1.xxxx + r2.xyzw;
+  r2.xyzw = cb2[2].xyzw * r1.zzzz + r2.xyzw;
+  r2.xyzw = cb2[3].xyzw + r2.xyzw;
+  r3.x = dot(v0.xyzw, cb4[0].xyzw);
+  r3.y = dot(v0.xyzw, cb4[1].xyzw);
+  r3.z = dot(v0.xyzw, cb4[2].xyzw);
+  o5.w = dot(v0.xyzw, cb4[3].xyzw);
+  r0.w = cb1[7].y + -r3.y;
+  r0.w = saturate(0.5 + -r0.w);
+  r0.w = r0.w * 0.899999976 + 0.100000001;
+  r4.x = cb1[7].x * r0.w;
+  o3.x = dot(v0.xyzw, cb0[5].xyzw);
+  o3.y = dot(v0.xyzw, cb0[6].xyzw);
+  o3.z = dot(v0.xyzw, cb0[7].xyzw);
+  switch (cb1[3].x) {
+    case 3 :    r0.w = dot(r1.xyz, r1.xyz);
+    r0.w = sqrt(r0.w);
+    r0.w = cb1[5].z + -r0.w;
+    r0.w = cb4[9].w * r0.w;
+    r5.w = saturate(cb1[5].w * r0.w);
+    r5.xyz = cb4[9].xyz;
+    r4.y = 0;
+    r6.xyzw = r4.yyyx;
+    r7.xyzw = r3.xyzy;
+    break;
+    case 4 :    r0.w = dot(r1.xyz, r1.xyz);
+    r0.w = sqrt(r0.w);
+    r3.w = -cb4[14].y + r3.y;
+    r0.w = 9.99999975e-006 + r0.w;
+    r4.y = abs(r3.w) / r0.w;
+    r4.y = cb1[5].x * r4.y;
+    r8.x = cmp(r4.y == 0.000000);
+    r8.y = -28853.9004 * r4.y;
+    r8.y = exp2(r8.y);
+    r8.y = 1 + -r8.y;
+    r4.y = r8.y / r4.y;
+    r4.y = r8.x ? 20000 : r4.y;
+    r8.x = min(cb4[14].y, r3.y);
+    r8.x = -cb1[5].x * r8.x;
+    r8.x = 1.44269502 * r8.x;
+    r8.x = exp2(r8.x);
+    r8.x = -cb1[5].y * r8.x;
+    r4.y = r8.x * r4.y;
+    r4.y = 1.44269502 * r4.y;
+    r4.y = exp2(r4.y);
+    r4.y = min(1, r4.y);
+    r0.w = r3.w / r0.w;
+    r0.w = cb0[8].z * r0.w;
+    r3.w = cmp(r0.w == 0.000000);
+    r8.x = -28853.9004 * r0.w;
+    r8.x = exp2(r8.x);
+    r8.x = 1 + -r8.x;
+    r0.w = r8.x / r0.w;
+    r0.w = r3.w ? 20000 : r0.w;
+    r3.w = cb4[14].y + -cb0[8].x;
+    r3.w = -cb0[8].z * r3.w;
+    r3.w = 1.44269502 * r3.w;
+    r3.w = exp2(r3.w);
+    r3.w = -cb0[8].y * r3.w;
+    r0.w = r3.w * r0.w;
+    r0.w = 1.44269502 * r0.w;
+    r0.w = exp2(r0.w);
+    r0.w = min(1, r0.w);
+    r0.w = r4.y * r0.w;
+    r5.w = saturate(cb4[9].w * r0.w);
+    r5.xyz = cb4[9].xyz;
+    r4.z = 0;
+    r6.xyzw = r4.zzzx;
+    r7.xyzw = r3.xyzy;
+    break;
+    default :
+    r5.xyzw = cb4[9].xyzw;
+    r4.w = 0;
+    r6.xyzw = r4.wwwx;
+    r7.xyzw = r3.xyzy;
+    break;
+  }
+  o1.xyzw = r5.xyzw;
+  o2.xyzw = r6.xyzw;
+  o6.xyzw = r7.xyzw;
+  r4.xy = cmp(float2(0,0) != cb2[6].xw);
+  r1.w = 1;
+  r5.x = dot(r1.xyzw, cb1[0].xyzw);
+  r5.y = dot(r1.xyzw, cb1[1].xyzw);
+  r5.z = dot(r1.xyzw, cb1[2].xyzw);
+  r5.w = r1.z;
+  r1.xyzw = r4.yyyy ? r2.xyzw : r5.xyzw;
+  o4.xyzw = r4.xxxx ? r1.xyzw : 0;
+  r1.xy = cmp(cb4[11].xy < float2(0.5,0.5));
+  r0.z = 1;
+  r0.w = dot(r0.xyz, cb3[0].xyw);
+  r1.z = r1.x ? r0.w : 0;
+  r1.w = dot(r0.xyz, cb3[1].xyw);
+  r3.w = r1.x ? r1.w : 0;
+  r4.x = r1.x ? r1.z : r0.w;
+  r4.y = r1.x ? r3.w : r1.w;
+  r0.w = dot(r0.xyz, cb3[2].xyw);
+  r1.x = r1.y ? r0.w : 0;
+  r0.x = dot(r0.xyz, cb3[3].xyw);
+  r0.y = r1.y ? r0.x : 0;
+  r4.w = r1.y ? r1.x : r0.w;
+  r4.z = r1.y ? r0.y : r0.x;
+  o8.xyzw = r4.xyzw;
+  o9.xyzw = float4(0,0,0,0);
+  o10.xyzw = v0.xyzw;
+  o11.xyzw = float4(0,0,0,0);
+  o0.xyzw = r2.xyzw;
+
+  float4 ini = IniParams.Load(0);
+  float4 ini4 = IniParams.Load(int2(4, 0));
+  float4 stereo = StereoParams.Load(0);
+
+  float renderSide = stereo.z;
+  float dominantSide = ini4.z;
+  float FOVScaleX = cb2[0].x;
+
+  float userIPDShift = ini.x * renderSide * o0.w;
+  float virtualIPDShift = ini.y * renderSide * FOVScaleX;
+
+  o0.x += userIPDShift;
+
+  if (renderSide != dominantSide)
+      o0.x += virtualIPDShift;
+
+  o3.w = 1;
+  o5.xyz = r3.xyz;
+  o7.xyz = float3(0,0,0);
+  o12.xyz = v0.xyz;
+  p7.x = cb1[7].z;
+  return;
+}
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//
+// Generated by Microsoft (R) D3D Shader Disassembler
+//
+//   using 3Dmigoto v1.3.16.41 on Fri May 08 09:05:51 2026
+//
+//
+// Input signature:
+//
+// Name                 Index   Mask Register SysValue  Format   Used
+// -------------------- ----- ------ -------- -------- ------- ------
+// POSITION                 0   xyzw        0     NONE   float   xyzw
+// NORMAL                   0   xyzw        1     NONE    uint
+// TEXCOORD                 0   xy          2     NONE     int   xy
+// TEXCOORD                 1   xy          3     NONE     int
+// TANGENT                  0   xyzw        4     NONE    uint
+// TANGENT                  1   xyzw        5     NONE    uint
+//
+//
+// Output signature:
+//
+// Name                 Index   Mask Register SysValue  Format   Used
+// -------------------- ----- ------ -------- -------- ------- ------
+// SV_Position              0   xyzw        0      POS   float   xyzw
+// TEXCOORD                 6   xyzw        1     NONE   float   xyzw
+// TEXCOORD                 7   xyzw        2     NONE   float   xyzw
+// TEXCOORD                 4   xyzw        3     NONE   float   xyzw
+// TEXCOORD                 5   xyzw        4     NONE   float   xyzw
+// COLOR                    0   xyzw        5     NONE   float   xyzw
+// COLOR                    1   xyzw        6     NONE   float   xyzw
+// TEXCOORD                10   xyz         7     NONE   float   xyz
+// TEXCOORD                11      w        7     NONE   float      w
+// TEXCOORD                 0   xyzw        8     NONE   float   xyzw
+// TEXCOORD                 1   xyzw        9     NONE   float   xyzw
+// TEXCOORD                 2   xyzw       10     NONE   float   xyzw
+// TEXCOORD                 3   xyzw       11     NONE   float   xyzw
+// TEXCOORD                 9   xyz        12     NONE   float   xyz
+//
+vs_5_0
+dcl_globalFlags refactoringAllowed
+dcl_constantbuffer cb0[9], immediateIndexed
+dcl_constantbuffer cb1[8], immediateIndexed
+dcl_constantbuffer cb2[7], immediateIndexed
+dcl_constantbuffer cb3[4], immediateIndexed
+dcl_constantbuffer cb4[15], immediateIndexed
+dcl_input v0.xyzw
+dcl_input v2.xy
+dcl_output_siv o0.xyzw, position
+dcl_output o1.xyzw
+dcl_output o2.xyzw
+dcl_output o3.xyzw
+dcl_output o4.xyzw
+dcl_output o5.xyzw
+dcl_output o6.xyzw
+dcl_output o7.xyz
+dcl_output o7.w
+dcl_output o8.xyzw
+dcl_output o9.xyzw
+dcl_output o10.xyzw
+dcl_output o11.xyzw
+dcl_output o12.xyz
+dcl_temps 9
+itof r0.xy, v2.xyxx
+dp4 r1.x, v0.xyzw, cb4[4].xyzw
+dp4 r1.y, v0.xyzw, cb4[5].xyzw
+dp4 r1.z, v0.xyzw, cb4[6].xyzw
+mul r2.xyzw, r1.yyyy, cb2[1].xyzw
+mad r2.xyzw, cb2[0].xyzw, r1.xxxx, r2.xyzw
+mad r2.xyzw, cb2[2].xyzw, r1.zzzz, r2.xyzw
+add r2.xyzw, r2.xyzw, cb2[3].xyzw
+dp4 r3.x, v0.xyzw, cb4[0].xyzw
+dp4 r3.y, v0.xyzw, cb4[1].xyzw
+dp4 r3.z, v0.xyzw, cb4[2].xyzw
+dp4 o5.w, v0.xyzw, cb4[3].xyzw
+add r0.w, -r3.y, cb1[7].y
+add_sat r0.w, -r0.w, l(0.500000)
+mad r0.w, r0.w, l(0.900000), l(0.100000)
+mul r4.x, r0.w, cb1[7].x
+dp4 o3.x, v0.xyzw, cb0[5].xyzw
+dp4 o3.y, v0.xyzw, cb0[6].xyzw
+dp4 o3.z, v0.xyzw, cb0[7].xyzw
+switch cb1[3].x
+  case l(3)
+  dp3 r0.w, r1.xyzx, r1.xyzx
+  sqrt r0.w, r0.w
+  add r0.w, -r0.w, cb1[5].z
+  mul r0.w, r0.w, cb4[9].w
+  mul_sat r5.w, r0.w, cb1[5].w
+  mov r5.xyz, cb4[9].xyzx
+  mov r4.y, l(0)
+  mov r6.xyzw, r4.yyyx
+  mov r7.xyzw, r3.xyzy
+  break
+  case l(4)
+  dp3 r0.w, r1.xyzx, r1.xyzx
+  sqrt r0.w, r0.w
+  add r3.w, r3.y, -cb4[14].y
+  add r0.w, r0.w, l(0.000010)
+  div r4.y, |r3.w|, r0.w
+  mul r4.y, r4.y, cb1[5].x
+  eq r8.x, r4.y, l(0.000000)
+  mul r8.y, r4.y, l(-28853.900391)
+  exp r8.y, r8.y
+  add r8.y, -r8.y, l(1.000000)
+  div r4.y, r8.y, r4.y
+  movc r4.y, r8.x, l(20000.000000), r4.y
+  min r8.x, r3.y, cb4[14].y
+  mul r8.x, r8.x, -cb1[5].x
+  mul r8.x, r8.x, l(1.442695)
+  exp r8.x, r8.x
+  mul r8.x, r8.x, -cb1[5].y
+  mul r4.y, r4.y, r8.x
+  mul r4.y, r4.y, l(1.442695)
+  exp r4.y, r4.y
+  min r4.y, r4.y, l(1.000000)
+  div r0.w, r3.w, r0.w
+  mul r0.w, r0.w, cb0[8].z
+  eq r3.w, r0.w, l(0.000000)
+  mul r8.x, r0.w, l(-28853.900391)
+  exp r8.x, r8.x
+  add r8.x, -r8.x, l(1.000000)
+  div r0.w, r8.x, r0.w
+  movc r0.w, r3.w, l(20000.000000), r0.w
+  add r3.w, -cb0[8].x, cb4[14].y
+  mul r3.w, r3.w, -cb0[8].z
+  mul r3.w, r3.w, l(1.442695)
+  exp r3.w, r3.w
+  mul r3.w, r3.w, -cb0[8].y
+  mul r0.w, r0.w, r3.w
+  mul r0.w, r0.w, l(1.442695)
+  exp r0.w, r0.w
+  min r0.w, r0.w, l(1.000000)
+  mul r0.w, r0.w, r4.y
+  mul_sat r5.w, r0.w, cb4[9].w
+  mov r5.xyz, cb4[9].xyzx
+  mov r4.z, l(0)
+  mov r6.xyzw, r4.zzzx
+  mov r7.xyzw, r3.xyzy
+  break
+  default
+  mov r5.xyzw, cb4[9].xyzw
+  mov r4.w, l(0)
+  mov r6.xyzw, r4.wwwx
+  mov r7.xyzw, r3.xyzy
+  break
+endswitch
+mov o1.xyzw, r5.xyzw
+mov o2.xyzw, r6.xyzw
+mov o6.xyzw, r7.xyzw
+ne r4.xy, l(0.000000, 0.000000, 0.000000, 0.000000), cb2[6].xwxx
+mov r1.w, l(1.000000)
+dp4 r5.x, r1.xyzw, cb1[0].xyzw
+dp4 r5.y, r1.xyzw, cb1[1].xyzw
+dp4 r5.z, r1.xyzw, cb1[2].xyzw
+mov r5.w, r1.z
+movc r1.xyzw, r4.yyyy, r2.xyzw, r5.xyzw
+and o4.xyzw, r1.xyzw, r4.xxxx
+lt r1.xy, cb4[11].xyxx, l(0.500000, 0.500000, 0.000000, 0.000000)
+mov r0.z, l(1.000000)
+dp3 r0.w, r0.xyzx, cb3[0].xywx
+and r1.z, r0.w, r1.x
+dp3 r1.w, r0.xyzx, cb3[1].xywx
+and r3.w, r1.w, r1.x
+movc r4.x, r1.x, r1.z, r0.w
+movc r4.y, r1.x, r3.w, r1.w
+dp3 r0.w, r0.xyzx, cb3[2].xywx
+and r1.x, r0.w, r1.y
+dp3 r0.x, r0.xyzx, cb3[3].xywx
+and r0.y, r0.x, r1.y
+movc r4.w, r1.y, r1.x, r0.w
+movc r4.z, r1.y, r0.y, r0.x
+mov o8.xyzw, r4.xyzw
+mov o9.xyzw, l(0,0,0,0)
+mov o10.xyzw, v0.xyzw
+mov o11.xyzw, l(0,0,0,0)
+mov o0.xyzw, r2.xyzw
+mov o3.w, l(1.000000)
+mov o5.xyz, r3.xyzx
+mov o7.xyz, l(0,0,0,0)
+mov o12.xyz, v0.xyzx
+mov o7.w, cb1[7].z
+ret
+// Approximately 0 instruction slots used
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
