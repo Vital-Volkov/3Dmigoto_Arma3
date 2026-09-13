@@ -51,4 +51,4 @@ Even at minimal Separation=1 Convergence=0(hold hotkey (default Ctrl+F5) ~10 sec
 It was a great challenge and learning curve how shaders work. Thanks to all creators of the 3Dmigoto and S3D community for such powerfull instruments. 
 Using it I actually implemented my S3D system in Arma3 and now playing it is awesome. Enjoy!
 
-## 💰 [Donate](https://donatr.ee/wital?utm_source=copy&utm_medium=share)
+## 💰 [Donate](https://donatr.ee/wital)
